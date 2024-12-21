@@ -1,45 +1,68 @@
-async function fetchSensorData() {
-            try {
-                const response = await fetch('http://192.168.50.144:5000/data'); // Update IP if needed
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+const apiUrl = 'http://192.168.1.152:5026/data'; // Replace with your backend URL
+
+// Fetch data from backend
+async function fetchPlantData() {
+    try {
+        const response = await fetch(apiUrl);
+        const data = await response.json();
+
+        // Update alerts
+        const alertsDiv = document.getElementById('alerts');
+        alertsDiv.innerHTML = data.alerts.length
+            ? data.alerts.map(alert => `<p>${alert}</p>`).join('')
+            : 'No alerts.';
+
+        // Update chart
+        updateChart(data);
+    } catch (error) {
+        console.error('Error fetching plant data:', error);
+    }
+}
+
+// Initialize Chart.js
+let statusChart;
+function initChart() {
+    const ctx = document.getElementById('status-chart').getContext('2d');
+    statusChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Temperature', 'Humidity', 'Light (LDR)', 'Soil Moisture'],
+            datasets: [{
+                label: 'Current Values',
+                data: [0, 0, 0, 0], // Initial placeholder values
+                backgroundColor: ['#4caf50', '#2196f3', '#ffeb3b', '#795548'],
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true
                 }
-                const data = await response.json();
-
-                // Update the sensor data
-                const sensorDiv = document.getElementById('sensor-data');
-                sensorDiv.innerHTML = `
-                    <p>Temperature: ${data.temperature} °C</p>
-                    <p>Humidity: ${data.humidity} %</p>
-                    <p>LDR Value: ${data.ldr}</p>
-                    <p>Soil Moisture: ${data.moisture}</p>
-                    <p>DHT22 Health: ${data.dht22Health ? 'Good' : 'Failed'}</p>
-                    <p>LDR Health: ${data.ldrHealth ? 'Good' : 'Failed'}</p>
-                    <p>Soil Moisture Health: ${data.moistureHealth ? 'Good' : 'Failed'}</p>
-                `;
-
-                // Update the last updated time in the desired format
-                const lastUpdated = document.getElementById('last-updated');
-                const now = new Date();
-                const options = {
-                    weekday: 'long', // Day of the week (e.g., Monday)
-                    year: 'numeric',
-                    month: '2-digit',
-                    day: '2-digit',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    second: '2-digit',
-                    hour12: false // 24-hour format
-                };
-                const formattedDate = now.toLocaleString('en-GB', options); // en-GB for the day/month format
-                lastUpdated.innerHTML = `Last Updated: ${formattedDate}`;
-            } catch (error) {
-                console.error("Error fetching sensor data:", error);
-                document.getElementById('sensor-data').innerText = 'Failed to load sensor data.';
-                document.getElementById('last-updated').innerHTML = 'Last Updated: Failed to update.';
             }
         }
+    });
+}
 
-        // Fetch data every 5 seconds
-        fetchSensorData();
-        setInterval(fetchSensorData, 5000);
+// Update Chart.js with new data
+function updateChart(data) {
+    const chartData = [
+        data.temperature || 0,
+        data.humidity || 0,
+        data.ldr || 0,
+        data.moisture || 0,
+    ];
+    statusChart.data.datasets[0].data = chartData;
+    statusChart.update();
+}
+
+// Handle manual watering
+document.getElementById('water-plant').addEventListener('click', () => {
+    console.log('Watering plant...');
+    // Optional: Send a request to the backend to manually activate the pump
+});
+
+// Initialize
+initChart();
+fetchPlantData();
+setInterval(fetchPlantData, 10000); 
