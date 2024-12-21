@@ -11,7 +11,7 @@ def receive_data():
     global sensor_data
     sensor_data = request.json
 
-    sensor_data["last_updated"] = datetime.now().strftime("%d-%m-%Y %H:%M %A")
+    sensor_data["last_updated"] = datetime.now().strftime("%A, %d/%m/%Y, %H:%M:%S")
     print("Received data:", sensor_data)
     return jsonify({"status": "success"}), 200
 
