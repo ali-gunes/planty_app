@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Planty App | Dashboard</title>
-    <link rel="stylesheet" href="styles.css">
+    
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
@@ -35,6 +35,22 @@ section {
     background-color: #ffffff;
 }
 
+.charts-div {
+    display: flex;
+}
+
+#temperature-chart {
+    max-width: 150px; /* Shrinks the canvas width */
+}
+
+#humidity-chart {
+    max-width: 150px; /* Shrinks the canvas width */
+}
+
+#other-metrics-chart {
+    max-width: 300px; /* Shrinks the canvas width */
+}
+
 #alerts p {
     margin: 0.5rem 0;
     color: #d32f2f;
@@ -57,6 +73,43 @@ button:hover {
     background-color: #388e3c;
 }
 
+/* Media queries for mobile responsiveness */
+@media (max-width: 768px) {
+            section {
+                margin: 1rem;
+                padding: 0.5rem;
+            }
+
+            header {
+                padding: 0.5rem;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            h2 {
+                font-size: 1.25rem;
+            }
+
+            .charts-div {
+                flex-direction: column; /* Stack charts vertically */
+            }
+
+            .slim-charts {
+                display: flex;
+            }
+
+            canvas {
+                max-width: 100%; /* Ensure charts fit within the screen */
+            }
+
+            button {
+                width: 100%; /* Buttons take full width on smaller screens */
+                font-size: 1rem;
+            }
+        }
+
     </style>
 </head>
 <body>
@@ -73,7 +126,13 @@ button:hover {
         <!-- Sensor Data Section -->
         <section id="sensor-data-section">
             <h2>Plant Status</h2>
-            <canvas id="status-chart" width="400" height="200"></canvas>
+            <div class="charts-div">
+                <div class="slim-charts">
+                    <canvas id="temperature-chart" width="400" height="200"></canvas>
+                    <canvas id="humidity-chart" width="400" height="200"></canvas>
+                </div>
+                <canvas id="other-metrics-chart" width="400" height="200"></canvas>
+            </div>
         </section>
 
         <!-- Manual Controls -->
@@ -85,74 +144,173 @@ button:hover {
     <script>
         const apiUrl = 'http://192.168.1.152:5026/data'; // Replace with your backend URL
 
-// Fetch data from backend
-async function fetchPlantData() {
-    try {
-        const response = await fetch(apiUrl);
-        const data = await response.json();
+        // Fetch data from backend
+        async function fetchPlantData() {
+            try {
+                const response = await fetch(apiUrl);
+                const data = await response.json();
 
-        // Update alerts
-        const alertsDiv = document.getElementById('alerts');
-        alertsDiv.innerHTML = data.alerts.length
-            ? data.alerts.map(alert => `<p>${alert}</p>`).join('')
-            : 'No alerts.';
+                // Update alerts
+                const alertsDiv = document.getElementById('alerts');
+                alertsDiv.innerHTML = data.alerts.length
+                    ? data.alerts.map(alert => `<p style="color: ${alert.split('.')[1]}">${alert.split('.')[0]}</p>`).join('')
+                    : 'No alerts.';
 
-        // Update chart
-        updateChart(data);
-    } catch (error) {
-        console.error('Error fetching plant data:', error);
-    }
-}
-
-// Initialize Chart.js
-let statusChart;
-function initChart() {
-    const ctx = document.getElementById('status-chart').getContext('2d');
-    statusChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: ['Temperature', 'Humidity', 'Light (LDR)', 'Soil Moisture'],
-            datasets: [{
-                label: 'Current Values',
-                data: [0, 0, 0, 0], // Initial placeholder values
-                backgroundColor: ['#4caf50', '#2196f3', '#ffeb3b', '#795548'],
-            }]
-        },
-        options: {
-            responsive: true,
-            scales: {
-                y: {
-                    beginAtZero: true
-                }
+                // Update chart
+                updateCharts(data);
+            } catch (error) {
+                console.error('Error fetching plant data:', error);
             }
         }
-    });
-}
 
-// Update Chart.js with new data
-function updateChart(data) {
-    const chartData = [
-        data.temperature || 0,
-        data.humidity || 0,
-        data.ldr || 0,
-        data.moisture || 0,
-    ];
-    statusChart.data.datasets[0].data = chartData;
-    statusChart.update();
-}
+        // Initialize Chart.js
+        let temperatureChart, humidityChart, otherMetricsChart;
+        function initChart() {
+            const tempCtx = document.getElementById('temperature-chart').getContext('2d');
+                temperatureChart = new Chart(tempCtx, {
+                    type: 'bar', // Line chart for temperature
+                    data: {
+                        labels: ['Temperature (°C)'], // Initial placeholder labels
+                        datasets: [{
+                            label: 'Temperature (°C)',
+                            data: [0], // Initial placeholder data
+                            backgroundColor: '#ff6384',
+                            borderColor: '#ff6384',
+                            fill: false
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 40, // Set the maximum value for the y-axis to 40°C
+                                title: {
+                                    display: false,
+                                    text: 'Temperature (°C)'
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false // Disable the legend entirely
+                            }
+                        },
+                        // Shrinks the bar width
+                        indexAxis: 'x', // Horizontal bar chart
+                        elements: {
+                            bar: {
+                                borderWidth: 1,
+                                borderRadius: 4,
+                                barPercentage: 0.4 // Shrinks the bars horizontally
+                            }
+                        }
+                    }
+                });
 
-// Handle manual watering
-document.getElementById('water-plant').addEventListener('click', () => {
-    console.log('Watering plant...');
-    // Optional: Send a request to the backend to manually activate the pump
-});
+                const humCtx = document.getElementById('humidity-chart').getContext('2d');
+                humidityChart = new Chart(humCtx, {
+                    type: 'bar', // Line chart for temperature
+                    data: {
+                        labels: ['Humidity (%)'], // Initial placeholder labels
+                        datasets: [{
+                            label: 'Humidity (%)',
+                            data: [0], // Initial placeholder data
+                            backgroundColor: '#36a2eb',
+                            borderColor: '#36a2eb',
+                            fill: false
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                display: false // Disable the legend entirely
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100, // Set the maximum value for the y-axis to 40°C
+                                title: {
+                                    display: false,
+                                    text: 'Humidity (%)'
+                                }
+                            }
+                        },
+                        // Shrinks the bar width
+                        indexAxis: 'x', // Horizontal bar chart
+                        elements: {
+                            bar: {
+                                borderWidth: 1,
+                                borderRadius: 4,
+                                barPercentage: 0.4 // Shrinks the bars horizontally
+                            }
+                        }
+                    }
+                });
 
-// Initialize
-initChart();
-fetchPlantData();
-setInterval(fetchPlantData, 10000); // Refresh every 10 seconds
+                const otherMetricsCtx = document.getElementById('other-metrics-chart').getContext('2d');
+                otherMetricsChart = new Chart(otherMetricsCtx, {
+                    type: 'bar', // Bar chart for other metrics
+                    data: {
+                        labels: ['Light (LDR)', 'Soil Moisture'], // Placeholder labels
+                        datasets: [{
+                            label: 'Sensor Values',
+                            data: [0, 0], // Placeholder data
+                            backgroundColor: ['#ffce56', '#4bc0c0']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                display: false // Disable the legend entirely
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 1024, // Set the maximum value for the y-axis to 40°C
+                                title: {
+                                    display: false,
+                                    text: 'LDR and Moisture'
+                                }
+                            }
+                        }
+                    }
+                });
+        }
+
+        // Update Chart.js with new data
+        function updateCharts(data) {
+            // Update temperature chart
+            temperatureChart.data.datasets[0].data = [data.temperature];
+            temperatureChart.update();
+
+            humidityChart.data.datasets[0].data = [data.humidity];
+            humidityChart.update();
+
+            // Update other metrics chart
+            otherMetricsChart.data.datasets[0].data = [
+                data.ldr,
+                data.moisture
+            ];
+            otherMetricsChart.update();
+        }
+
+        // Handle manual watering
+        document.getElementById('water-plant').addEventListener('click', () => {
+            console.log('Watering plant...');
+            // Optional: Send a request to the backend to manually activate the pump
+        });
+
+        // Initialize
+        initChart();
+        fetchPlantData();
+        setInterval(fetchPlantData, 10000); // Refresh every 10 seconds
 
     </script>
-    <script src="script.js"></script>
+    
 </body>
 </html>
