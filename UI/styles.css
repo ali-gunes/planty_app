@@ -13,7 +13,8 @@ header {
     padding: 1rem;
 }
 
-h1, h2 {
+h1,
+h2 {
     color: #1b5e20;
 }
 
@@ -26,9 +27,33 @@ section {
     background-color: #ffffff;
 }
 
+.charts-div {
+    display: flex;
+}
+
+/* .charts {
+    display: flex;
+    max-width: 1200px;
+} */
+
+#temperature-chart {
+    max-width: 150px;
+    /* Shrinks the canvas width */
+}
+
+#humidity-chart {
+    max-width: 150px;
+    /* Shrinks the canvas width */
+}
+
+#other-metrics-chart {
+    max-width: 300px;
+    /* Shrinks the canvas width */
+}
+
 #alerts p {
     margin: 0.5rem 0;
-    color: #d32f2f;
+    /* color: #d32f2f; */
 }
 
 canvas {
@@ -46,4 +71,37 @@ button {
 
 button:hover {
     background-color: #388e3c;
+}
+
+/* Media queries for mobile responsiveness */
+@media (max-width: 768px) {
+    section {
+        margin: 1rem;
+        padding: 0.5rem;
+    }
+
+    header {
+        padding: 0.5rem;
+    }
+
+    h1 {
+        font-size: 1.5rem;
+    }
+
+    h2 {
+        font-size: 1.25rem;
+    }
+
+    .charts-div {
+        flex-direction: column;
+    }
+
+    canvas {
+        max-width: 100%;
+    }
+
+    button {
+        width: 100%;
+        font-size: 1rem;
+    }
 }

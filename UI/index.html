@@ -1,80 +1,89 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Planty App | Dashboard</title>
-    
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
-    font-family: Arial, sans-serif;
-    background-color: #e7f6e7;
-    color: #2b4726;
-    margin: 0;
-    padding: 0;
-}
+            font-family: Arial, sans-serif;
+            background-color: #e7f6e7;
+            color: #2b4726;
+            margin: 0;
+            padding: 0;
+        }
 
-header {
-    background-color: #4caf50;
-    color: white;
-    text-align: center;
-    padding: 1rem;
-}
+        header {
+            background-color: #4caf50;
+            color: white;
+            text-align: center;
+            padding: 1rem;
+        }
 
-h1, h2 {
-    color: #1b5e20;
-}
+        h1,
+        h2 {
+            color: #1b5e20;
+        }
 
-section {
-    margin: 2rem auto;
-    padding: 1rem;
-    max-width: 600px;
-    border: 1px solid #d4e6d4;
-    border-radius: 8px;
-    background-color: #ffffff;
-}
+        section {
+            margin: 2rem auto;
+            padding: 1rem;
+            max-width: 600px;
+            border: 1px solid #d4e6d4;
+            border-radius: 8px;
+            background-color: #ffffff;
+        }
 
-.charts-div {
-    display: flex;
-}
+        .charts-div {
+            display: flex;
+        }
 
-#temperature-chart {
-    max-width: 150px; /* Shrinks the canvas width */
-}
+        /* .charts {
+            display: flex;
+            max-width: 1200px;
+        } */
 
-#humidity-chart {
-    max-width: 150px; /* Shrinks the canvas width */
-}
+        #temperature-chart {
+            max-width: 150px;
+            /* Shrinks the canvas width */
+        }
 
-#other-metrics-chart {
-    max-width: 300px; /* Shrinks the canvas width */
-}
+        #humidity-chart {
+            max-width: 150px;
+            /* Shrinks the canvas width */
+        }
 
-#alerts p {
-    margin: 0.5rem 0;
-    /* color: #d32f2f; */
-}
+        #other-metrics-chart {
+            max-width: 300px;
+            /* Shrinks the canvas width */
+        }
 
-canvas {
-    margin-top: 1rem;
-}
+        #alerts p {
+            margin: 0.5rem 0;
+            /* color: #d32f2f; */
+        }
 
-button {
-    padding: 0.5rem 1rem;
-    background-color: #4caf50;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-}
+        canvas {
+            margin-top: 1rem;
+        }
 
-button:hover {
-    background-color: #388e3c;
-}
+        button {
+            padding: 0.5rem 1rem;
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
 
-/* Media queries for mobile responsiveness */
-@media (max-width: 768px) {
+        button:hover {
+            background-color: #388e3c;
+        }
+
+        /* Media queries for mobile responsiveness */
+        @media (max-width: 768px) {
             section {
                 margin: 1rem;
                 padding: 0.5rem;
@@ -97,17 +106,17 @@ button:hover {
             }
 
             canvas {
-                max-width: 100%; 
+                max-width: 100%;
             }
 
             button {
-                width: 100%; 
+                width: 100%;
                 font-size: 1rem;
             }
         }
-
     </style>
 </head>
+
 <body>
     <header>
         <h1>Planty Dashboard</h1>
@@ -120,16 +129,25 @@ button:hover {
         </section>
 
         <!-- Sensor Data Section -->
-        <section id="sensor-data-section">
-            <h2>Plant Status</h2>
-            <div class="charts-div">
-                <!-- <div class="slim-charts"> -->
+        <div class="charts">
+            <section id="sensor-data-section">
+                <h2>Plant Status</h2>
+                <div class="charts-div">
+                    <!-- <div class="slim-charts"> -->
                     <canvas id="temperature-chart" width="400" height="200"></canvas>
                     <canvas id="humidity-chart" width="400" height="200"></canvas>
-                <!-- </div> -->
-                <canvas id="other-metrics-chart" width="400" height="200"></canvas>
-            </div>
-        </section>
+                    <!-- </div> -->
+                    <canvas id="other-metrics-chart" width="400" height="200"></canvas>
+                </div>
+            </section>
+
+            <section id="weather-section">
+                <h2>Weekly Weather Projection</h2>
+                <canvas id="weather-chart" width="400" height="200"></canvas>
+                <!-- <div id="weather-data">Fetching weather data...</div> -->
+
+            </section>
+        </div>
 
         <!-- Manual Controls -->
         <section id="manual-controls">
@@ -138,144 +156,275 @@ button:hover {
         </section>
     </main>
     <script>
-        const apiUrl = 'http://192.168.1.152:5026/data'; // Replace with your backend URL
-
+        const apiUrl = 'http://192.168.1.152:5026/data';
+        const weatherApiUrl = 'http://192.168.1.152:5026/weather';
         // Fetch data from backend
         async function fetchPlantData() {
             try {
-                const response = await fetch(apiUrl);
-                const data = await response.json();
+                const [plantResponse, weatherResponse] = await Promise.all([
+                    fetch(apiUrl),
+                    fetch(weatherApiUrl)
+                ]);
+
+                const data = await plantResponse.json();
+                const weatherData = await weatherResponse.json();
 
                 // Update alerts
                 const alertsDiv = document.getElementById('alerts');
                 alertsDiv.innerHTML = data.alerts.length
-                    ? data.alerts.map(alert => `<p style="color: ${alert.split('.')[1]}">${alert.split('.')[0]}</p>`).join('')
+                    ? data.alerts.map(alert => `<p style="color: ${alert.split(',')[1]}">${alert.split(',')[0]}</p>`).join('')
                     : 'No alerts.';
 
                 // Update chart
                 updateCharts(data);
+                updateWeatherChart(weatherData);
+                updateCareInstructions(data, weatherData);
             } catch (error) {
                 console.error('Error fetching plant data:', error);
             }
         }
 
+        // function generateCareInstructions(sensorData, weatherData) {
+        //     const instructions = [];
+
+        //     // Check temperature trends
+        //     if (weatherData.some(day => day.temp < 10)) {
+        //         instructions.push('Temperature is expected to critically drop. Avoid overwatering and please keep optimal temperatures of 18 °C.');
+        //     } else if (weatherData.some(day => day.temp < 18)) {
+        //         instructions.push('Prepare for warmer days. Consider adjusting watering frequency.');
+        //     } else if (weatherData.some(day => day.temp > 18 && day.temp < 25)) {
+        //         instructions.push('Weather forecast announces optimal temperatures. Keep the watering schedule consistent.');
+        //     } else {
+        //         instructions.push('Hot days ahead, please consider increasing water frequency.');
+        //     }
+
+        //     return instructions;
+        // }
+
+        function generateCareInstructions(sensorData, weatherData) {
+            const instructions = [];
+
+            // Check temperature trends
+            if (sensorData.temperature > 24) {
+                instructions.push('The current temperature is too high. Move your Pachira Money Tree to a cooler spot.');
+            } else if (sensorData.temperature < 18) {
+                instructions.push('The current temperature is too low. Keep the Pachira Money Tree away from cold drafts.');
+            }
+
+            if (weatherData.some(day => day.temp > 30)) {
+                instructions.push('High temperatures are expected this week. Monitor soil moisture to avoid drying out.');
+            } else if (weatherData.some(day => day.temp < 10)) {
+                instructions.push('Cold weather is forecasted. Protect your Pachira Money Tree from drafts and extreme cold.');
+            }
+
+            // Check humidity trends
+            if (sensorData.humidity < 50) {
+                instructions.push('Humidity is too low. Consider misting the leaves or using a humidifier.');
+            } else if (sensorData.humidity > 70) {
+                instructions.push('Humidity is high. Ensure proper ventilation to prevent fungal issues.');
+            }
+
+            if (weatherData.some(day => day.humidity < 40)) {
+                instructions.push('Low humidity is expected this week. Increase misting or humidity levels.');
+            }
+
+            // Check soil moisture trends
+            if (sensorData.moisture < 300) {
+                instructions.push('The soil is dry. Water the Pachira Money Tree thoroughly.');
+            } else if (sensorData.moisture > 800) {
+                instructions.push('The soil is too wet. Allow it to dry out before the next watering.');
+            }
+
+            // Check light trends (e.g., using LDR sensor data)
+            if (sensorData.ldr > 800) {
+                instructions.push('The light level is too high. Move the Pachira Money Tree to a spot with indirect sunlight.');
+            } else if (sensorData.ldr < 200) {
+                instructions.push('The light level is too low. Place the Pachira Money Tree near a bright window.');
+
+            }
+
+            return instructions;
+        }
+
+
+        // Update alerts section with care instructions
+        function updateCareInstructions(sensorData, weatherData) {
+            const instructions = generateCareInstructions(sensorData, weatherData);
+            const alertsDiv = document.getElementById('alerts');
+            alertsDiv.innerHTML += instructions.map(instruction => `<p style="color: blue;">${instruction}</p>`).join('');
+        }
+
+
+        let weatherChart; // Declare the weatherChart variable globally
+
+        function updateWeatherChart(weatherData) {
+            var options = { weekday: 'long'/*, year: 'numeric', month: 'long', day: 'numeric',*/, hour: '2-digit', minute: '2-digit' };
+            const labels = weatherData.map(day => new Date(day.date).toLocaleDateString("en-GB", options));
+            const temps = weatherData.map(day => day.temp);
+
+            // Destroy the existing chart if it exists
+            if (weatherChart) {
+                weatherChart.destroy();
+            }
+
+            const weatherCtx = document.getElementById('weather-chart').getContext('2d');
+            weatherChart = new Chart(weatherCtx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Weekly Temperature (°C)',
+                        data: temps,
+                        borderColor: '#36a2eb',
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        tension: 0.4,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: true,
+                        },
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Date',
+                            },
+                        },
+                        y: {
+                            beginAtZero: false,
+                            title: {
+                                display: true,
+                                text: 'Temperature (°C)',
+                            },
+                        },
+                    },
+                },
+            });
+        }
+
+
+
         // Initialize Chart.js
         let temperatureChart, humidityChart, otherMetricsChart;
         function initChart() {
             const tempCtx = document.getElementById('temperature-chart').getContext('2d');
-                temperatureChart = new Chart(tempCtx, {
-                    type: 'bar',
-                    data: {
-                        labels: ['Temperature (°C)'], 
-                        datasets: [{
-                            label: 'Temperature (°C)',
-                            data: [0],
-                            backgroundColor: '#ff6384',
-                            borderColor: '#ff6384',
-                            fill: false
-                        }]
+            temperatureChart = new Chart(tempCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Temperature (°C)'],
+                    datasets: [{
+                        label: 'Temperature (°C)',
+                        data: [0],
+                        backgroundColor: '#ff6384',
+                        borderColor: '#ff6384',
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 40, // Set the maximum value for the y-axis to 40°C
+                            title: {
+                                display: false,
+                                text: 'Temperature (°C)'
+                            }
+                        }
                     },
-                    options: {
-                        responsive: true,
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                max: 40, // Set the maximum value for the y-axis to 40°C
-                                title: {
-                                    display: false,
-                                    text: 'Temperature (°C)'
-                                }
-                            }
-                        },
-                        plugins: {
-                            legend: {
-                                display: false // Disable the legend entirely
-                            }
-                        },
-                        // Shrinks the bar width
-                        // indexAxis: 'x', // Horizontal bar chart
-                        // elements: {
-                        //     bar: {
-                        //         borderWidth: 1,
-                        //         borderRadius: 4,
-                        //         barPercentage: 0.4 // Shrinks the bars horizontally
-                        //     }
-                        // }
-                    }
-                });
+                    plugins: {
+                        legend: {
+                            display: false // Disable the legend entirely
+                        }
+                    },
+                    // Shrinks the bar width
+                    // indexAxis: 'x', // Horizontal bar chart
+                    // elements: {
+                    //     bar: {
+                    //         borderWidth: 1,
+                    //         borderRadius: 4,
+                    //         barPercentage: 0.4 // Shrinks the bars horizontally
+                    //     }
+                    // }
+                }
+            });
 
-                const humCtx = document.getElementById('humidity-chart').getContext('2d');
-                humidityChart = new Chart(humCtx, {
-                    type: 'bar', // Line chart for temperature
-                    data: {
-                        labels: ['Humidity (%)'], // Initial placeholder labels
-                        datasets: [{
-                            label: 'Humidity (%)',
-                            data: [0], // Initial placeholder data
-                            backgroundColor: '#36a2eb',
-                            borderColor: '#36a2eb',
-                            fill: false
-                        }]
+            const humCtx = document.getElementById('humidity-chart').getContext('2d');
+            humidityChart = new Chart(humCtx, {
+                type: 'bar', // Line chart for temperature
+                data: {
+                    labels: ['Humidity (%)'], // Initial placeholder labels
+                    datasets: [{
+                        label: 'Humidity (%)',
+                        data: [0], // Initial placeholder data
+                        backgroundColor: '#36a2eb',
+                        borderColor: '#36a2eb',
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false // Disable the legend entirely
+                        }
                     },
-                    options: {
-                        responsive: true,
-                        plugins: {
-                            legend: {
-                                display: false // Disable the legend entirely
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100, // Set the maximum value for the y-axis to 40°C
+                            title: {
+                                display: false,
+                                text: 'Humidity (%)'
                             }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                max: 100, // Set the maximum value for the y-axis to 40°C
-                                title: {
-                                    display: false,
-                                    text: 'Humidity (%)'
-                                }
-                            }
-                        },
-                        // // Shrinks the bar width
-                        // indexAxis: 'x', // Horizontal bar chart
-                        // elements: {
-                        //     bar: {
-                        //         borderWidth: 1,
-                        //         borderRadius: 4,
-                        //         barPercentage: 0.4 // Shrinks the bars horizontally
-                        //     }
-                        // }
-                    }
-                });
+                        }
+                    },
+                    // // Shrinks the bar width
+                    // indexAxis: 'x', // Horizontal bar chart
+                    // elements: {
+                    //     bar: {
+                    //         borderWidth: 1,
+                    //         borderRadius: 4,
+                    //         barPercentage: 0.4 // Shrinks the bars horizontally
+                    //     }
+                    // }
+                }
+            });
 
-                const otherMetricsCtx = document.getElementById('other-metrics-chart').getContext('2d');
-                otherMetricsChart = new Chart(otherMetricsCtx, {
-                    type: 'bar', // Bar chart for other metrics
-                    data: {
-                        labels: ['Light (LDR)', 'Soil Moisture'], // Placeholder labels
-                        datasets: [{
-                            label: 'Sensor Values',
-                            data: [0, 0], // Placeholder data
-                            backgroundColor: ['#ffce56', '#4bc0c0']
-                        }]
+            const otherMetricsCtx = document.getElementById('other-metrics-chart').getContext('2d');
+            otherMetricsChart = new Chart(otherMetricsCtx, {
+                type: 'bar', // Bar chart for other metrics
+                data: {
+                    labels: ['Light (LDR)', 'Soil Moisture'], // Placeholder labels
+                    datasets: [{
+                        label: 'Sensor Values',
+                        data: [0, 0], // Placeholder data
+                        backgroundColor: ['#ffce56', '#4bc0c0']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false // Disable the legend entirely
+                        }
                     },
-                    options: {
-                        responsive: true,
-                        plugins: {
-                            legend: {
-                                display: false // Disable the legend entirely
-                            }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                max: 1024, // Set the maximum value for the y-axis to 40°C
-                                title: {
-                                    display: false,
-                                    text: 'LDR and Moisture'
-                                }
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 1024, // Set the maximum value for the y-axis to 40°C
+                            title: {
+                                display: false,
+                                text: 'LDR and Moisture'
                             }
                         }
                     }
-                });
+                }
+            });
         }
 
         // Update Chart.js with new data
@@ -307,6 +456,7 @@ button:hover {
         setInterval(fetchPlantData, 10000); // Refresh every 10 seconds
 
     </script>
-    
+
 </body>
+
 </html>
