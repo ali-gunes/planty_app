@@ -124,8 +124,8 @@
     <main>
         <!-- Alerts Section -->
         <section id="alerts-section">
-            <h2>Alerts</h2>
-            <div id="alerts">No alerts yet.</div>
+            <h2>Notifications</h2>
+            <div id="alerts"></div>
         </section>
 
         <!-- Sensor Data Section -->
@@ -171,9 +171,10 @@
 
                 // Update alerts
                 const alertsDiv = document.getElementById('alerts');
+                alertsDiv.innerHTML = "";
                 alertsDiv.innerHTML = data.alerts.length
-                    ? data.alerts.map(alert => `<p style="color: ${alert.split(',')[1]}">${alert.split(',')[0]}</p>`).join('')
-                    : 'No alerts.';
+                    ? data.alerts.map(alert => `<p style="color: ${alert.split(',')[1]}">${alert.split(',')[0]}</p>`).join('') : ""
+
 
                 // Update chart
                 updateCharts(data);
@@ -184,63 +185,60 @@
             }
         }
 
-        // function generateCareInstructions(sensorData, weatherData) {
-        //     const instructions = [];
-
-        //     // Check temperature trends
-        //     if (weatherData.some(day => day.temp < 10)) {
-        //         instructions.push('Temperature is expected to critically drop. Avoid overwatering and please keep optimal temperatures of 18 °C.');
-        //     } else if (weatherData.some(day => day.temp < 18)) {
-        //         instructions.push('Prepare for warmer days. Consider adjusting watering frequency.');
-        //     } else if (weatherData.some(day => day.temp > 18 && day.temp < 25)) {
-        //         instructions.push('Weather forecast announces optimal temperatures. Keep the watering schedule consistent.');
-        //     } else {
-        //         instructions.push('Hot days ahead, please consider increasing water frequency.');
-        //     }
-
-        //     return instructions;
-        // }
-
         function generateCareInstructions(sensorData, weatherData) {
             const instructions = [];
 
             // Check temperature trends
-            if (sensorData.temperature > 24) {
-                instructions.push('The current temperature is too high. Move your Pachira Money Tree to a cooler spot.');
-            } else if (sensorData.temperature < 18) {
-                instructions.push('The current temperature is too low. Keep the Pachira Money Tree away from cold drafts.');
+            if (sensorData.temperature < 12) {
+                instructions.push('🌡️ The current temperature reading from sensor is too low. Consider moving the plant to room temperature immediately.');
+            } else if (sensorData.temperature < 16) {
+                instructions.push('🌡️ The current temperature reading from sensor is low. Keep the plant away from cold drafts.');
+            } else if (sensorData.temperature < 24) {
+                instructions.push('🌡️ The current temperature reading from sensor is optimal. Please keep the temperature level consistent with the current status.');
+            } else if (sensorData.temperature < 36) {
+                instructions.push('🌡️ The current temperature reading from sensor is too high. Move your plant to a cooler spot.');
+            } else {
+                instructions.push('🌡️ RIP.');
             }
 
-            if (weatherData.some(day => day.temp > 30)) {
-                instructions.push('High temperatures are expected this week. Monitor soil moisture to avoid drying out.');
-            } else if (weatherData.some(day => day.temp < 10)) {
-                instructions.push('Cold weather is forecasted. Protect your Pachira Money Tree from drafts and extreme cold.');
+
+            if (weatherData.some(day => day.temp < 10)) {
+                instructions.push('❄️ Cold weather is forecasted. Protect your plant from drafts and extreme cold.');
+            } else if (weatherData.some(day => day.temp < 24)) {
+                instructions.push('🌈 Weather forecast for upcoming days are optimal for the plant.');
+            } else {
+                instructions.push('🔥 High temperatures are expected this week. Monitor soil moisture to avoid drying out.');
             }
+
 
             // Check humidity trends
-            if (sensorData.humidity < 50) {
-                instructions.push('Humidity is too low. Consider misting the leaves or using a humidifier.');
+            if (sensorData.humidity < 30) {
+                instructions.push('🌬️ Humidity reading from sensor is too low. Consider misting the leaves or using a humidifier.');
             } else if (sensorData.humidity > 70) {
-                instructions.push('Humidity is high. Ensure proper ventilation to prevent fungal issues.');
+                instructions.push('🌬️ Humidity reading from sensor is high. Ensure proper ventilation to prevent fungal issues.');
+            } else {
+                instructions.push('🌬️ Humidity reading from sensor is optimal. Please keep the humidity level consistent with the current status.');
             }
 
-            if (weatherData.some(day => day.humidity < 40)) {
-                instructions.push('Low humidity is expected this week. Increase misting or humidity levels.');
-            }
-
-            // Check soil moisture trends
-            if (sensorData.moisture < 300) {
-                instructions.push('The soil is dry. Water the Pachira Money Tree thoroughly.');
-            } else if (sensorData.moisture > 800) {
-                instructions.push('The soil is too wet. Allow it to dry out before the next watering.');
+            if (sensorData.moisture < 200) {
+                instructions.push('💧 The soil is critically wet. Empty the remaining water collected under the pot and dry out the soil immediately.');
+            } else if (sensorData.moisture < 400) {
+                instructions.push('💧 The soil is too wet. Allow it to dry out before the next watering.');
+            } else if (sensorData.moisture < 800) {
+                instructions.push('💧 The soil moisture is optimal. Please keep the moisture level consistent with the current status.');
+            } else if (sensorData.moisture < 1024) {
+                instructions.push('💧 The soil is too dry. Please water the plant thoroughly.');
             }
 
             // Check light trends (e.g., using LDR sensor data)
-            if (sensorData.ldr > 800) {
-                instructions.push('The light level is too high. Move the Pachira Money Tree to a spot with indirect sunlight.');
-            } else if (sensorData.ldr < 200) {
-                instructions.push('The light level is too low. Place the Pachira Money Tree near a bright window.');
-
+            if (sensorData.ldr < 200) {
+                instructions.push('🔆 The light level reading from sensor is critically high. Move the plant to a spot with indirect sunlight immediately.')
+            } else if (sensorData.ldr < 400) {
+                instructions.push('🔆 The light level reading from sensor is high. Move the plant to a spot with indirect sunlight.')
+            } else if (sensorData.ldr < 600) {
+                instructions.push('🔆 The light level reading from sensor is optimal. Please keep the light level consistent with the current status.')
+            } else if (sensorData.ldr < 800) {
+                instructions.push('🔆 The light level reading from sensor is critically high. Move the plant to a spot with indirect sunlight immediately.')
             }
 
             return instructions;
@@ -251,12 +249,11 @@
         function updateCareInstructions(sensorData, weatherData) {
             const instructions = generateCareInstructions(sensorData, weatherData);
             const alertsDiv = document.getElementById('alerts');
-            alertsDiv.innerHTML += instructions.map(instruction => `<p style="color: blue;">${instruction}</p>`).join('');
+            alertsDiv.innerHTML += instructions.map(instruction => `<p ">${instruction.split(',')[0]}</p>`).join('');
         }
 
 
         let weatherChart; // Declare the weatherChart variable globally
-
         function updateWeatherChart(weatherData) {
             var options = { weekday: 'long'/*, year: 'numeric', month: 'long', day: 'numeric',*/, hour: '2-digit', minute: '2-digit' };
             const labels = weatherData.map(day => new Date(day.date).toLocaleDateString("en-GB", options));
@@ -305,8 +302,6 @@
                 },
             });
         }
-
-
 
         // Initialize Chart.js
         let temperatureChart, humidityChart, otherMetricsChart;
