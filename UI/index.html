@@ -53,7 +53,7 @@ section {
 
 #alerts p {
     margin: 0.5rem 0;
-    color: #d32f2f;
+    /* color: #d32f2f; */
 }
 
 canvas {
@@ -93,19 +93,15 @@ button:hover {
             }
 
             .charts-div {
-                flex-direction: column; /* Stack charts vertically */
-            }
-
-            .slim-charts {
-                display: flex;
+                flex-direction: column;
             }
 
             canvas {
-                max-width: 100%; /* Ensure charts fit within the screen */
+                max-width: 100%; 
             }
 
             button {
-                width: 100%; /* Buttons take full width on smaller screens */
+                width: 100%; 
                 font-size: 1rem;
             }
         }
@@ -127,10 +123,10 @@ button:hover {
         <section id="sensor-data-section">
             <h2>Plant Status</h2>
             <div class="charts-div">
-                <div class="slim-charts">
+                <!-- <div class="slim-charts"> -->
                     <canvas id="temperature-chart" width="400" height="200"></canvas>
                     <canvas id="humidity-chart" width="400" height="200"></canvas>
-                </div>
+                <!-- </div> -->
                 <canvas id="other-metrics-chart" width="400" height="200"></canvas>
             </div>
         </section>
@@ -168,12 +164,12 @@ button:hover {
         function initChart() {
             const tempCtx = document.getElementById('temperature-chart').getContext('2d');
                 temperatureChart = new Chart(tempCtx, {
-                    type: 'bar', // Line chart for temperature
+                    type: 'bar',
                     data: {
-                        labels: ['Temperature (°C)'], // Initial placeholder labels
+                        labels: ['Temperature (°C)'], 
                         datasets: [{
                             label: 'Temperature (°C)',
-                            data: [0], // Initial placeholder data
+                            data: [0],
                             backgroundColor: '#ff6384',
                             borderColor: '#ff6384',
                             fill: false
@@ -197,14 +193,14 @@ button:hover {
                             }
                         },
                         // Shrinks the bar width
-                        indexAxis: 'x', // Horizontal bar chart
-                        elements: {
-                            bar: {
-                                borderWidth: 1,
-                                borderRadius: 4,
-                                barPercentage: 0.4 // Shrinks the bars horizontally
-                            }
-                        }
+                        // indexAxis: 'x', // Horizontal bar chart
+                        // elements: {
+                        //     bar: {
+                        //         borderWidth: 1,
+                        //         borderRadius: 4,
+                        //         barPercentage: 0.4 // Shrinks the bars horizontally
+                        //     }
+                        // }
                     }
                 });
 
@@ -238,15 +234,15 @@ button:hover {
                                 }
                             }
                         },
-                        // Shrinks the bar width
-                        indexAxis: 'x', // Horizontal bar chart
-                        elements: {
-                            bar: {
-                                borderWidth: 1,
-                                borderRadius: 4,
-                                barPercentage: 0.4 // Shrinks the bars horizontally
-                            }
-                        }
+                        // // Shrinks the bar width
+                        // indexAxis: 'x', // Horizontal bar chart
+                        // elements: {
+                        //     bar: {
+                        //         borderWidth: 1,
+                        //         borderRadius: 4,
+                        //         barPercentage: 0.4 // Shrinks the bars horizontally
+                        //     }
+                        // }
                     }
                 });
 
