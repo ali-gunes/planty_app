@@ -40,29 +40,20 @@
             display: flex;
         }
 
-        /* .charts {
-            display: flex;
-            max-width: 1200px;
-        } */
-
         #temperature-chart {
             max-width: 150px;
-            /* Shrinks the canvas width */
         }
 
         #humidity-chart {
             max-width: 150px;
-            /* Shrinks the canvas width */
         }
 
         #other-metrics-chart {
             max-width: 300px;
-            /* Shrinks the canvas width */
         }
 
         #alerts p {
             margin: 0.5rem 0;
-            /* color: #d32f2f; */
         }
 
         canvas {
@@ -201,16 +192,6 @@
                 instructions.push('🌡️ RIP.');
             }
 
-
-            if (weatherData.some(day => day.temp < 10)) {
-                instructions.push('❄️ Cold weather is forecasted. Protect your plant from drafts and extreme cold.');
-            } else if (weatherData.some(day => day.temp < 24)) {
-                instructions.push('🌈 Weather forecast for upcoming days are optimal for the plant.');
-            } else {
-                instructions.push('🔥 High temperatures are expected this week. Monitor soil moisture to avoid drying out.');
-            }
-
-
             // Check humidity trends
             if (sensorData.humidity < 30) {
                 instructions.push('🌬️ Humidity reading from sensor is too low. Consider misting the leaves or using a humidifier.');
@@ -239,6 +220,14 @@
                 instructions.push('🔆 The light level reading from sensor is optimal. Please keep the light level consistent with the current status.')
             } else if (sensorData.ldr < 800) {
                 instructions.push('🔆 The light level reading from sensor is critically high. Move the plant to a spot with indirect sunlight immediately.')
+            }
+
+            if (weatherData.some(day => day.temp < 10)) {
+                instructions.push('❄️ Cold weather is forecasted. Protect your plant from drafts and extreme cold.');
+            } else if (weatherData.some(day => day.temp < 24)) {
+                instructions.push('🌈 Weather forecast for upcoming days are optimal for the plant.');
+            } else {
+                instructions.push('🔥 High temperatures are expected this week. Monitor soil moisture to avoid drying out.');
             }
 
             return instructions;
@@ -336,15 +325,6 @@
                             display: false // Disable the legend entirely
                         }
                     },
-                    // Shrinks the bar width
-                    // indexAxis: 'x', // Horizontal bar chart
-                    // elements: {
-                    //     bar: {
-                    //         borderWidth: 1,
-                    //         borderRadius: 4,
-                    //         barPercentage: 0.4 // Shrinks the bars horizontally
-                    //     }
-                    // }
                 }
             });
 
@@ -378,15 +358,6 @@
                             }
                         }
                     },
-                    // // Shrinks the bar width
-                    // indexAxis: 'x', // Horizontal bar chart
-                    // elements: {
-                    //     bar: {
-                    //         borderWidth: 1,
-                    //         borderRadius: 4,
-                    //         barPercentage: 0.4 // Shrinks the bars horizontally
-                    //     }
-                    // }
                 }
             });
 
@@ -448,7 +419,7 @@
         // Initialize
         initChart();
         fetchPlantData();
-        setInterval(fetchPlantData, 5000); // Refresh every 10 seconds
+        setInterval(fetchPlantData, 5000);
 
     </script>
 
