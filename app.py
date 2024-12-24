@@ -76,7 +76,8 @@ def receive_data():
     alerts = []
     sensor_data = request.json
 
-    sensor_data["last_updated"] = datetime.now().strftime("%A, %d/%m/%Y, %H:%M:%S")
+    #sensor_data["last_updated"] = datetime.now().strftime("%A, %d/%m/%Y, %H:%M:%S")
+    sensor_data["last_updated"] = datetime.now().strftime("%A %H:%M:%S")
     sensor_data["alerts"] = alerts
 
     print("Received data:", sensor_data)

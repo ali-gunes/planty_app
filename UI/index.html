@@ -22,6 +22,18 @@
             padding: 1rem;
         }
 
+        footer {
+            background-color: #4caf50;
+            color: white;
+            text-align: center;
+            padding: 1rem;
+            margin-top: 2rem;
+        }
+
+        footer p {
+            margin: 0.5rem 0;
+        }
+
         h1,
         h2 {
             color: #1b5e20;
@@ -110,11 +122,15 @@
 
 <body>
     <header>
+        
+       
         <h1>Planty Dashboard</h1>
     </header>
     <main>
         <!-- Alerts Section -->
         <section id="alerts-section">
+            <!-- <p id="server-update">Last Server Update: <span id="last-server-update">Loading...</span></p>
+            <p id="client-update">Last Client Update: <span id="last-client-update">Loading...</span></p> -->
             <h2>Notifications</h2>
             <div id="alerts"></div>
         </section>
@@ -146,6 +162,12 @@
             <button id="water-plant">Water Plant</button>
         </section>
     </main>
+    <footer>
+        
+        <p>Last Server Update: <span id="last-server-update">Loading...</span></p>
+        <p>Last Client Update: <span id="last-client-update">Loading...</span></p>
+        <p>Made with ❤️ and ☕️ for my Control System's Project</p>
+    </footer>
     <script>
         const apiUrl = 'http://192.168.1.24:5026/data';
         const weatherApiUrl = 'http://192.168.1.24:5026/weather';
@@ -166,6 +188,14 @@
                 alertsDiv.innerHTML = data.alerts.length
                     ? data.alerts.map(alert => `<p style="color: ${alert.split(',')[1]}">${alert.split(',')[0]}</p>`).join('') : ""
 
+                // Update the Last Server Update timestamp
+                const serverUpdateSpan = document.getElementById('last-server-update');
+                
+                serverUpdateSpan.textContent = data.last_updated;
+
+
+                // Call the client timestamp update function
+                updateClientTimestamp();
 
                 // Update chart
                 updateCharts(data);
@@ -174,6 +204,28 @@
             } catch (error) {
                 console.error('Error fetching plant data:', error);
             }
+        }
+
+        // Function to format date/time in "%A, %d/%m/%Y, %H:%M:%S"
+        function formatDateTime(date) {
+            const options = {
+                weekday: 'long',
+                // day: '2-digit',
+                // month: '2-digit',
+                // year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false,
+            };
+            return new Intl.DateTimeFormat('en-GB', options).format(date);
+        }
+
+        // Function to update client timestamp
+        function updateClientTimestamp() {
+            const clientUpdateSpan = document.getElementById('last-client-update');
+            const currentTime = new Date();
+            clientUpdateSpan.textContent = formatDateTime(currentTime);
         }
 
         function generateCareInstructions(sensorData, weatherData) {
@@ -419,7 +471,7 @@
         // Initialize
         initChart();
         fetchPlantData();
-        setInterval(fetchPlantData, 5000);
+        setInterval(fetchPlantData, 10000);
 
     </script>
 
