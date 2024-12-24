@@ -113,6 +113,34 @@
             margin: 0.5rem 0;
         }
 
+        /* Align "Plant Care" heading and buttons on the same line */
+        #alerts-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center; /* Align the items vertically centered */
+            margin-bottom: 0rem; /* Add space between this and the alerts div */
+            margin-top: 0rem;
+        }
+
+        #alerts-section h2 {
+            margin: 0;
+        }
+
+        .buttons-container {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+        }
+
+        .buttons-container button {
+            margin-left: 1rem;
+        }
+
+        /* Alerts should be under the buttons */
+        #alerts {
+            margin-top: 1rem;
+        }
+
         /* Media queries for mobile responsiveness */
         @media (max-width: 768px) {
             section {
@@ -156,12 +184,23 @@
     </header>
     <main>
         <!-- Alerts Section -->
-        <section id="alerts-section">
-            <!-- <p id="server-update">Last Server Update: <span id="last-server-update">Loading...</span></p>
-            <p id="client-update">Last Client Update: <span id="last-client-update">Loading...</span></p> -->
-            <h2>Plant Care</h2>
+        <!-- Alerts Section -->
+        <section>
+            <section id="alerts-section" style="border: 0px solid transparent">
+                <h2>Plant Care</h2>
+                <div class="buttons-container">
+                    <button id="auto-care">Auto Care</button>
+                </div>
+            </section>
+            <!-- Alerts Content under the buttons -->
             <div id="alerts"></div>
         </section>
+        <!-- Alerts Content -->
+                <!-- Manual Controls -->
+                <section id="manual-controls">
+                    <h2>Manual Controls</h2>
+                    <button id="water-plant">Water Plant</button>
+                </section>
 
         <!-- Sensor Data Section -->
         <div class="charts">
@@ -184,21 +223,19 @@
             </section>
         </div>
 
-        <!-- Manual Controls -->
-        <section id="manual-controls">
-            <h2>Manual Controls</h2>
-            <button id="water-plant">Water Plant</button>
-        </section>
+
     </main>
     <footer>
         
-        <p>Last Server Update: <span id="last-server-update">Loading...</span></p>
-        <p>Last Client Update: <span id="last-client-update">Loading...</span></p>
+        <p>Last Server Update: <span id="last-server-update">Not updated yet.</span></p>
+        <p>Last Client Update: <span id="last-client-update">Not updated yet.</span></p>
         <p>Made with ❤️ and ☕️ for my Control System's Project</p>
     </footer>
     <script>
         const apiUrl = 'http://192.168.1.24:5026/data';
         const weatherApiUrl = 'http://192.168.1.24:5026/weather';
+        let pumpEnabled = false;
+        let autoCareEnabled = true;
         // Fetch data from backend
         async function fetchPlantData() {
             try {
@@ -233,6 +270,12 @@
                 console.error('Error fetching plant data:', error);
             }
         }
+
+        // Auto Care / Manual Care Toggle
+        document.getElementById('auto-care').addEventListener('click', () => {
+            autoCareEnabled = !autoCareEnabled;
+            document.getElementById('auto-care').textContent = autoCareEnabled ? 'Manual Care' : 'Auto Care';
+        });
 
         // Function to format date/time in "%A, %d/%m/%Y, %H:%M:%S"
         function formatDateTime(date) {
@@ -573,10 +616,10 @@
         }
 
         // Handle manual watering
-        document.getElementById('water-plant').addEventListener('click', () => {
-            console.log('Watering plant...');
-            // Optional: Send a request to the backend to manually activate the pump
-        });
+        // document.getElementById('water-plant').addEventListener('click', () => {
+        //     console.log('Watering plant...');
+        //     // Optional: Send a request to the backend to manually activate the pump
+        // });
 
         // Initialize
         initChart();
