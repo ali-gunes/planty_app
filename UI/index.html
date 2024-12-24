@@ -85,6 +85,34 @@
             background-color: #388e3c;
         }
 
+        /* Styles for critical instructions */
+        .critical {
+            color: #d32f2f; /* Bright red for critical issues */
+            font-weight: bold;
+            background-color: #ffebee; /* Light red background for emphasis */
+            padding: 0.5rem;
+            border-radius: 5px;
+            margin: 0.5rem 0;
+        }
+
+        /* Styles for warning instructions */
+        .warning {
+            color: #ffa000; /* Orange for warnings */
+            background-color: #fff3e0; /* Light orange background */
+            padding: 0.5rem;
+            border-radius: 5px;
+            margin: 0.5rem 0;
+        }
+
+        /* Styles for normal instructions */
+        .normal {
+            color: #388e3c; /* Green for normal messages */
+            background-color: #e8f5e9; /* Light green background */
+            padding: 0.5rem;
+            border-radius: 5px;
+            margin: 0.5rem 0;
+        }
+
         /* Media queries for mobile responsiveness */
         @media (max-width: 768px) {
             section {
@@ -131,7 +159,7 @@
         <section id="alerts-section">
             <!-- <p id="server-update">Last Server Update: <span id="last-server-update">Loading...</span></p>
             <p id="client-update">Last Client Update: <span id="last-client-update">Loading...</span></p> -->
-            <h2>Notifications</h2>
+            <h2>Plant Care</h2>
             <div id="alerts"></div>
         </section>
 
@@ -233,64 +261,146 @@
 
             // Check temperature trends
             if (sensorData.temperature < 12) {
-                instructions.push('🌡️ The current temperature reading from sensor is too low. Consider moving the plant to room temperature immediately.');
+                instructions.push({
+                    text: '🌡️ The current temperature reading from sensor is too low. Consider moving the plant to room temperature immediately.',
+                    severity: 'critical'
+                });
             } else if (sensorData.temperature < 16) {
-                instructions.push('🌡️ The current temperature reading from sensor is low. Keep the plant away from cold drafts.');
+                instructions.push({
+                    text: '🌡️ The current temperature reading from sensor is low. Keep the plant away from cold drafts.',
+                    severity: 'warning'
+                });
             } else if (sensorData.temperature < 24) {
-                instructions.push('🌡️ The current temperature reading from sensor is optimal. Please keep the temperature level consistent with the current status.');
+                instructions.push({
+                    text: '🌡️ The current temperature reading from sensor is optimal. Please keep the temperature level consistent with the current status.',
+                    severity: 'normal'
+                });
             } else if (sensorData.temperature < 36) {
-                instructions.push('🌡️ The current temperature reading from sensor is too high. Move your plant to a cooler spot.');
+                instructions.push({
+                    text: '🌡️ The current temperature reading from sensor is too high. Move your plant to a cooler spot.',
+                    severity: 'warning'
+                });
             } else {
-                instructions.push('🌡️ RIP.');
+                instructions.push({
+                    text: '🌡️ RIP.',
+                    severity: 'critical'
+                });
             }
 
             // Check humidity trends
             if (sensorData.humidity < 30) {
-                instructions.push('🌬️ Humidity reading from sensor is too low. Consider misting the leaves or using a humidifier.');
+                instructions.push({
+                    text: '🌬️ Humidity reading from sensor is too low. Consider misting the leaves or using a humidifier.',
+                    severity: 'critical'
+                });
             } else if (sensorData.humidity > 70) {
-                instructions.push('🌬️ Humidity reading from sensor is high. Ensure proper ventilation to prevent fungal issues.');
+                instructions.push({
+                    text: '🌬️ Humidity reading from sensor is high. Ensure proper ventilation to prevent fungal issues.',
+                    severity: 'warning'
+                });
             } else {
-                instructions.push('🌬️ Humidity reading from sensor is optimal. Please keep the humidity level consistent with the current status.');
+                instructions.push({
+                    text: '🌬️ Humidity reading from sensor is optimal. Please keep the humidity level consistent with the current status.',
+                    severity: 'normal'
+                });
             }
 
+            // Check soil moisture trends
             if (sensorData.moisture < 200) {
-                instructions.push('💧 The soil is critically wet. Empty the remaining water collected under the pot and dry out the soil immediately.');
+                instructions.push({
+                    text: '💧 The soil is critically wet. Empty the remaining water collected under the pot and dry out the soil immediately.',
+                    severity: 'critical'
+                });
             } else if (sensorData.moisture < 400) {
-                instructions.push('💧 The soil is too wet. Allow it to dry out before the next watering.');
+                instructions.push({
+                    text: '💧 The soil is too wet. Allow it to dry out before the next watering.',
+                    severity: 'warning'
+                });
             } else if (sensorData.moisture < 800) {
-                instructions.push('💧 The soil moisture is optimal. Please keep the moisture level consistent with the current status.');
+                instructions.push({
+                    text: '💧 The soil moisture is optimal. Please keep the moisture level consistent with the current status.',
+                    severity: 'normal'
+                });
             } else if (sensorData.moisture < 1024) {
-                instructions.push('💧 The soil is too dry. Please water the plant thoroughly.');
+                instructions.push({
+                    text: '💧 The soil is too dry. Please water the plant thoroughly.',
+                    severity: 'warning'
+                });
             }
 
             // Check light trends (e.g., using LDR sensor data)
             if (sensorData.ldr < 200) {
-                instructions.push('🔆 The light level reading from sensor is critically high. Move the plant to a spot with indirect sunlight immediately.')
+                instructions.push({
+                    text: '🔆 The light level reading from sensor is critically high. Move the plant to a spot with indirect sunlight immediately.',
+                    severity: 'critical'
+                });
             } else if (sensorData.ldr < 400) {
-                instructions.push('🔆 The light level reading from sensor is high. Move the plant to a spot with indirect sunlight.')
+                instructions.push({
+                    text: '🔆 The light level reading from sensor is high. Move the plant to a spot with indirect sunlight.',
+                    severity: 'warning'
+                });
             } else if (sensorData.ldr < 600) {
-                instructions.push('🔆 The light level reading from sensor is optimal. Please keep the light level consistent with the current status.')
+                instructions.push({
+                    text: '🔆 The light level reading from sensor is optimal. Please keep the light level consistent with the current status.',
+                    severity: 'normal'
+                });
             } else if (sensorData.ldr < 800) {
-                instructions.push('🔆 The light level reading from sensor is critically high. Move the plant to a spot with indirect sunlight immediately.')
+                instructions.push({
+                    text: '🔆 The light level reading from sensor is critically high. Move the plant to a spot with indirect sunlight immediately.',
+                    severity: 'critical'
+                });
+            }
+            
+            // Weather forecast trends
+            if (weatherData.some(day => day.temp < 10)) {
+                instructions.push({
+                    text: '❄️ Cold weather is forecasted. Protect your plant from drafts and extreme cold.',
+                    severity: 'critical'
+                });
+            } else if (weatherData.some(day => day.temp < 24)) {
+                instructions.push({
+                    text: '🌈 Weather forecast for upcoming days is optimal for the plant.',
+                    severity: 'normal'
+                });
+            } else {
+                instructions.push({
+                    text: '🔥 High temperatures are expected this week. Monitor soil moisture to avoid drying out.',
+                    severity: 'warning'
+                });
             }
 
-            if (weatherData.some(day => day.temp < 10)) {
-                instructions.push('❄️ Cold weather is forecasted. Protect your plant from drafts and extreme cold.');
-            } else if (weatherData.some(day => day.temp < 24)) {
-                instructions.push('🌈 Weather forecast for upcoming days are optimal for the plant.');
-            } else {
-                instructions.push('🔥 High temperatures are expected this week. Monitor soil moisture to avoid drying out.');
-            }
 
             return instructions;
         }
 
 
         // Update alerts section with care instructions
+        // function updateCareInstructions(sensorData, weatherData) {
+        //     const instructions = generateCareInstructions(sensorData, weatherData);
+        //     const alertsDiv = document.getElementById('alerts');
+        //     alertsDiv.innerHTML += instructions.map(instruction => `<p ">${instruction.split(',')[0]}</p>`).join('');
+        // }
+
         function updateCareInstructions(sensorData, weatherData) {
             const instructions = generateCareInstructions(sensorData, weatherData);
             const alertsDiv = document.getElementById('alerts');
-            alertsDiv.innerHTML += instructions.map(instruction => `<p ">${instruction.split(',')[0]}</p>`).join('');
+            alertsDiv.innerHTML = "";
+
+            instructions.forEach(instruction => {
+                const instructionElement = document.createElement('p');
+                instructionElement.textContent = instruction.text;
+
+                // Add classes based on severity
+                if (instruction.severity === 'critical') {
+                    instructionElement.classList.add('critical');
+                } else if (instruction.severity === 'warning') {
+                    instructionElement.classList.add('warning');
+                } else {
+                    instructionElement.classList.add('normal');
+                }
+
+                alertsDiv.appendChild(instructionElement);
+            });
         }
 
 
