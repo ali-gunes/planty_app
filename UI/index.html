@@ -433,8 +433,8 @@
 
             // Update other metrics chart
             otherMetricsChart.data.datasets[0].data = [
-                data.ldr,
-                data.moisture
+                1024 - data.ldr,
+                1024 - data.moisture
             ];
             otherMetricsChart.update();
         }

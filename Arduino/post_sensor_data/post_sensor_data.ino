@@ -14,7 +14,7 @@ const char* password = "boyunegme";
 #define MOISTURE_PIN A1
 
 // Server details
-const char* server = "192.168.206.144";
+const char* server = "192.168.106.144";
 const int serverPort = 5026;
 
 // Sensor and Wi-Fi objects
@@ -48,7 +48,7 @@ void sendDataToServer(float temperature, float humidity, int ldrValue, int moist
     // Send data
     if (client.connect(server, serverPort)) {
         client.println("POST /data HTTP/1.1");
-        client.println("Host: 192.168.206.144");
+        client.println("Host: 192.168.106.144");
         client.println("Content-Type: application/json");
         client.print("Content-Length: ");
         client.println(jsonData.length());

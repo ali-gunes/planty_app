@@ -29,8 +29,9 @@ HUMIDITY_MAX = 75.0  # Optimal humidity upper bound
 LDR_MIN = 800  # Minimum light value for adequate light (lower value means brighter light)
 LDR_MAX = 200  # Maximum light value before risk of leaf burn (lower value means brighter light)
 
-SOIL_MOISTURE_THRESHOLD = 600  # Soil moisture threshold for watering
-SOIL_MOISTURE_MINIMUM_THRESHOLD = 300
+SOIL_MOISTURE_THRESHOLD = 500  # Soil moisture threshold for watering
+SOIL_MOISTURE_MINIMUM_THRESHOLD = 800
+SOIL_MOISTURE_MAXIMUM_THRESHOLD = 400
 
 def fetch_weather_data():
     global cached_weather_data, last_fetch_time
@@ -96,34 +97,16 @@ def receive_data():
         "pump_duration": 0  # Default: pump off
     }
 
-    # Temperature Alerts
-    # if temperature < TEMPERATURE_MIN:
-    #     response["alerts"].append("Temperature too low! Move the plant to a warmer location.,red")
-    # elif temperature > TEMPERATURE_MAX:
-    #     response["alerts"].append("Temperature too high! Ensure adequate ventilation.,red")
-    #
-    # # Humidity Alerts
-    # if humidity < HUMIDITY_MIN:
-    #     response["alerts"].append("Humidity too low! Consider watering the plant.,red")
-    # elif humidity > HUMIDITY_MAX:
-    #     response["alerts"].append("Humidity too high! Risk of fungal growth.,red")
-    #
-    # # Light Alerts
-    # if ldr > LDR_MIN:
-    #     response["alerts"].append("Light levels too low! Move the plant to a brighter spot.,red")
-    # elif ldr < LDR_MAX:
-    #     response["alerts"].append("Light levels too high! Protect the plant from direct sunlight.,red")
-
     # Soil Moisture and Pump Logic
-    if moisture < SOIL_MOISTURE_MINIMUM_THRESHOLD:
+    if moisture > SOIL_MOISTURE_MINIMUM_THRESHOLD:
         response["enable_pump"] = True
-        response["pump_duration"] = 10
-    elif moisture < SOIL_MOISTURE_THRESHOLD:
+        response["pump_duration"] = 7
+    elif moisture > SOIL_MOISTURE_THRESHOLD:
         response["enable_pump"] = True
-        # Adjust watering duration based on dryness and humidity
-        response["pump_duration"] = 5 if humidity >= HUMIDITY_OPTIMAL else 10
-    # elif moisture >= SOIL_MOISTURE_THRESHOLD:
-    #     response["alerts"].append("Soil moisture is sufficient. No need to water the plant.,#1b5e20")
+        response["pump_duration"] = 5
+    elif moisture > SOIL_MOISTURE_MAXIMUM_THRESHOLD:
+        response["enable_pump"] = True
+        response["pump_duration"] = 3
 
     # Sensor Health Alerts
     if not dht22_health:
