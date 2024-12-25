@@ -22,6 +22,19 @@
             padding: 1rem;
         }
 
+        .logo {
+            width: 50px; /* Adjust size as needed */
+            height: auto; /* Maintain aspect ratio */
+            display: inline-block; /* Align with the heading */
+            vertical-align: middle; /* Center with the heading text */
+            margin-right: 10px; /* Space between logo and heading */
+        }
+        header h1 {
+            display: inline-block; /* Keep heading inline with the logo */
+            margin: 0; /* Remove default margin for better alignment */
+        }
+
+
         footer {
             background-color: #4caf50;
             color: white;
@@ -178,12 +191,10 @@
 
 <body>
     <header>
-        
-       
+        <img src="logo.png" alt="Planty Logo" class="logo">
         <h1>Planty Dashboard</h1>
     </header>
     <main>
-        <!-- Alerts Section -->
         <!-- Alerts Section -->
         <section>
             <section id="alerts-section" style="border: 0px solid transparent">
