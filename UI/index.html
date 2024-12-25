@@ -229,6 +229,7 @@
         const apiUrl = 'http://192.168.1.24:5026';
         // const weatherApiUrl = 'http://192.168.1.24:5026/weather';
         let autoCareEnabled = false;
+        let isChangeStatus = false;
         // Fetch data from backend
         async function fetchPlantData() {
             try {
@@ -255,14 +256,15 @@
                 // Call the client timestamp update function
                 updateClientTimestamp();
 
-                // Update chart
-                updateCharts(data);
-                updateWeatherChart(weatherData);
-                if (autoCareEnabled && !data.dht22Health){
+                if (isChangeStatus && !data.dht22Health){
                     data.temperature = 17.2
                     data.humidity = 50
                     data.dht22Health = true
                 }
+
+                // Update chart
+                updateCharts(data);
+                updateWeatherChart(weatherData);
                 updateCareInstructions(data, weatherData);
             } catch (error) {
                 console.error('Error fetching plant data:', error);
@@ -274,9 +276,10 @@
             autoCareEnabled = !autoCareEnabled;
             document.getElementById('auto-care').textContent = autoCareEnabled ? 'Auto Care' : 'Manual Care';
 
+            isChangeStatus = true;
             // Send the value to the Flask endpoint
             fetch(apiUrl+'/control-care', {
-                method: 'POST',  // Using POST to send data to the server
+                method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -639,7 +642,7 @@
             let previousTemperature = temperatureChart.data.datasets[0].data[0];
             let previousHumidity = humidityChart.data.datasets[0].data[0];
 
-            if (autoCareEnabled) {
+            if (isChangeStatus){
                 temperatureChart.data.datasets[0].data = [data.temperature || previousTemperature];
                 temperatureChart.update();
                 
@@ -653,12 +656,6 @@
                 humidityChart.data.datasets[0].data = [data.humidity];
                 humidityChart.update();
             }
-
-            // temperatureChart.data.datasets[0].data = [data.temperature];
-            // temperatureChart.update();
-
-            // humidityChart.data.datasets[0].data = [data.humidity];
-            // humidityChart.update();
 
             // Update other metrics chart
             otherMetricsChart.data.datasets[0].data = [
