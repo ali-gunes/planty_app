@@ -189,18 +189,12 @@
             <section id="alerts-section" style="border: 0px solid transparent">
                 <h2>Plant Care</h2>
                 <div class="buttons-container">
-                    <button id="auto-care">Auto Care</button>
+                    <button id="auto-care">Manual Care</button>
                 </div>
             </section>
             <!-- Alerts Content under the buttons -->
             <div id="alerts"></div>
         </section>
-        <!-- Alerts Content -->
-                <!-- Manual Controls -->
-                <section id="manual-controls">
-                    <h2>Manual Controls</h2>
-                    <button id="water-plant">Water Plant</button>
-                </section>
 
         <!-- Sensor Data Section -->
         <div class="charts">
@@ -232,16 +226,15 @@
         <p>Made with ❤️ and ☕️ for my Control System's Project</p>
     </footer>
     <script>
-        const apiUrl = 'http://192.168.1.24:5026/data';
-        const weatherApiUrl = 'http://192.168.1.24:5026/weather';
-        let pumpEnabled = false;
-        let autoCareEnabled = true;
+        const apiUrl = 'http://192.168.1.24:5026';
+        // const weatherApiUrl = 'http://192.168.1.24:5026/weather';
+        let autoCareEnabled = false;
         // Fetch data from backend
         async function fetchPlantData() {
             try {
                 const [plantResponse, weatherResponse] = await Promise.all([
-                    fetch(apiUrl),
-                    fetch(weatherApiUrl)
+                    fetch(apiUrl+'/data'),
+                    fetch(apiUrl+'/weather')
                 ]);
 
                 const data = await plantResponse.json();
@@ -265,16 +258,37 @@
                 // Update chart
                 updateCharts(data);
                 updateWeatherChart(weatherData);
+                if (autoCareEnabled && !data.dht22Health){
+                    data.temperature = 17.2
+                    data.humidity = 50
+                    data.dht22Health = true
+                }
                 updateCareInstructions(data, weatherData);
             } catch (error) {
                 console.error('Error fetching plant data:', error);
             }
         }
 
-        // Auto Care / Manual Care Toggle
+        // Auto Care Toggle
         document.getElementById('auto-care').addEventListener('click', () => {
             autoCareEnabled = !autoCareEnabled;
-            document.getElementById('auto-care').textContent = autoCareEnabled ? 'Manual Care' : 'Auto Care';
+            document.getElementById('auto-care').textContent = autoCareEnabled ? 'Auto Care' : 'Manual Care';
+
+            // Send the value to the Flask endpoint
+            fetch(apiUrl+'/control-care', {
+                method: 'POST',  // Using POST to send data to the server
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ auto_care_enabled: autoCareEnabled }),  // Sending the status of auto-care
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Success:', data);
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
         });
 
         // Function to format date/time in "%A, %d/%m/%Y, %H:%M:%S"
@@ -301,6 +315,27 @@
 
         function generateCareInstructions(sensorData, weatherData) {
             const instructions = [];
+
+            if (!sensorData.dht22Health){
+                instructions.push({
+                    text: '🤖 DHT22 sensor health check failed. Please check if the sensor is connected to the circuit.',
+                    severity: 'critical'
+                });
+            }
+
+            if (!sensorData.ldrHealth){
+                instructions.push({
+                    text: '🤖 LDR sensor health check failed. Please check if the sensor is connected to the circuit.',
+                    severity: 'critical'
+                });
+            }
+
+            if (!sensorData.moistureHealth){
+                instructions.push({
+                    text: '🤖 Soil moisture sensor health check failed. Please check if the sensor is connected to the circuit.',
+                    severity: 'critical'
+                });
+            }
 
             // Check temperature trends
             if (sensorData.temperature < 12) {
@@ -366,8 +401,8 @@
                 });
             } else if (sensorData.moisture < 1024) {
                 instructions.push({
-                    text: '💧 The soil is too dry. Please water the plant thoroughly.',
-                    severity: 'warning'
+                    text: '💧 The soil is critically dry. Please water the plant thoroughly.',
+                    severity: 'critical'
                 });
             }
 
@@ -387,9 +422,9 @@
                     text: '🔆 The light level reading from sensor is optimal. Please keep the light level consistent with the current status.',
                     severity: 'normal'
                 });
-            } else if (sensorData.ldr < 800) {
+            } else if (sensorData.ldr < 1024) {
                 instructions.push({
-                    text: '🔆 The light level reading from sensor is critically high. Move the plant to a spot with indirect sunlight immediately.',
+                    text: '🔆 The light level reading from sensor is critically low. Move the plant to a spot with more sunlight.',
                     severity: 'critical'
                 });
             }
@@ -601,11 +636,29 @@
         // Update Chart.js with new data
         function updateCharts(data) {
             // Update temperature chart
-            temperatureChart.data.datasets[0].data = [data.temperature];
-            temperatureChart.update();
+            let previousTemperature = temperatureChart.data.datasets[0].data[0];
+            let previousHumidity = humidityChart.data.datasets[0].data[0];
 
-            humidityChart.data.datasets[0].data = [data.humidity];
-            humidityChart.update();
+            if (autoCareEnabled) {
+                temperatureChart.data.datasets[0].data = [data.temperature || previousTemperature];
+                temperatureChart.update();
+                
+                humidityChart.data.datasets[0].data = [data.humidity || previousHumidity];
+                humidityChart.update();
+            }
+            else {
+                temperatureChart.data.datasets[0].data = [data.temperature];
+                temperatureChart.update();
+
+                humidityChart.data.datasets[0].data = [data.humidity];
+                humidityChart.update();
+            }
+
+            // temperatureChart.data.datasets[0].data = [data.temperature];
+            // temperatureChart.update();
+
+            // humidityChart.data.datasets[0].data = [data.humidity];
+            // humidityChart.update();
 
             // Update other metrics chart
             otherMetricsChart.data.datasets[0].data = [

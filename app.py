@@ -16,6 +16,7 @@ WEATHER_API_URL = f"https://api.openweathermap.org/data/2.5/forecast?q={CITY}&ap
 
 cached_weather_data = None
 last_fetch_time = None
+auto_care = None
 
 # Thresholds for Pachira Money Tree
 TEMPERATURE_MIN = 16.0  # Minimum temperature for safe conditions
@@ -94,20 +95,21 @@ def receive_data():
     # Initialize response
     response = {
         "alerts": alerts,
-        "enable_pump": False,
+        "enable_pump": auto_care if auto_care is not None else False,
         "pump_duration": 0  # Default: pump off
     }
 
     # Soil Moisture and Pump Logic
-    if moisture > SOIL_MOISTURE_MINIMUM_THRESHOLD:
-        response["enable_pump"] = True
-        response["pump_duration"] = 7
-    elif moisture > SOIL_MOISTURE_THRESHOLD:
-        response["enable_pump"] = True
-        response["pump_duration"] = 5
-    elif moisture > SOIL_MOISTURE_MAXIMUM_THRESHOLD:
-        response["enable_pump"] = True
-        response["pump_duration"] = 3
+    if response['enable_pump']:
+        if moisture > SOIL_MOISTURE_MINIMUM_THRESHOLD:
+            # response["enable_pump"] = True
+            response["pump_duration"] = 7
+        elif moisture > SOIL_MOISTURE_THRESHOLD:
+            # response["enable_pump"] = True
+            response["pump_duration"] = 5
+        elif moisture > SOIL_MOISTURE_MAXIMUM_THRESHOLD:
+            # response["enable_pump"] = True
+            response["pump_duration"] = 3
 
     # Sensor Health Alerts
     if not dht22_health:
@@ -131,6 +133,20 @@ def get_weather():
 @app.route("/data", methods=["GET"])
 def send_data():
     return jsonify(sensor_data)
+
+@app.route("/control-care", methods=["POST"])
+def control_care():
+    # Parse the JSON data from the request body
+    data = request.get_json()
+
+    # Update the sensor_data with the received value
+    if 'auto_care_enabled' in data:
+        global auto_care
+        auto_care = data['auto_care_enabled']
+
+    # You can add other logic for different data being sent
+
+    return jsonify({"status": "success"})
 
 # Serve the UI files
 @app.route("/")
