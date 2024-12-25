@@ -1,6 +1,6 @@
 from http.client import responses
 import requests
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, request, jsonify, send_from_directory, render_template
 from datetime import datetime, timedelta
 
 #app = Flask(__name__, static_folder="UI", static_url_path="/UI")
@@ -151,7 +151,7 @@ def control_care():
 # Serve the UI files
 @app.route("/")
 def index():
-    return send_from_directory("UI", "index.html")
+    return render_template('index.html')
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5026, debug=True)
